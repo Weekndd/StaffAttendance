@@ -16,15 +16,23 @@ public class Team {
 
     private String name;
 
+    @Column(name = "leave_deadline_days")
+    private long leaveDeadlineDays;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "manager_id")
     private User manager;
 
     @OneToMany(mappedBy = "team")
-    List<User> teamUsers;
+    private List<User> teamUsers;
+
+
 
     @Builder
-    public Team(String name) {
+    public Team(long id, String name, long leaveDeadlineDays) {
+        this.id = id;
+        this.leaveDeadlineDays = leaveDeadlineDays;
         this.name = name;
     }
 }
+
