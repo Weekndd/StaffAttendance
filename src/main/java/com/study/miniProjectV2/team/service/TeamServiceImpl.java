@@ -1,5 +1,7 @@
 package com.study.miniProjectV2.team.service;
 
+import com.study.miniProjectV2.common.exception.NotFoundException;
+import com.study.miniProjectV2.common.response.BaseResponseStatus;
 import com.study.miniProjectV2.team.dto.RequestCreateTeamDto;
 import com.study.miniProjectV2.team.dto.TeamDto;
 import com.study.miniProjectV2.team.entity.Team;
@@ -13,11 +15,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TeamServiceImpl implements TeamService{
     private final TeamRepository teamRepository;
+
     @Override
-    public void createTeam(String teamName) {
-        teamRepository.save(Team.builder()
-                .name(teamName)
-                .build());
+    public void createTeam(RequestCreateTeamDto requestCreateTeamDto) {
+        teamRepository.save(requestCreateTeamDto.toEntity());
     }
 
     @Override
@@ -27,5 +28,12 @@ public class TeamServiceImpl implements TeamService{
                 .map(TeamDto::fromEntity)
                 .toList();
         return teams;
+    }
+
+    @Override
+    public TeamDto getTeamById(long id) {
+        Team team = teamRepository.findById(id)
+                .orElseThrow(()-> new NotFoundException(BaseResponseStatus.TEAM_NOT_FOUND));
+        return TeamDto.fromEntity(team);
     }
 }

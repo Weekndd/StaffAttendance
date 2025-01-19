@@ -35,4 +35,13 @@ public class ExceptionAdvice {
         return new BaseResponse<>(exception.getStatus());
     }
 
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    public BaseResponse<BaseResponseStatus> InsufficientAnnualLeaveException(InsufficientAnnualLeaveException exception) {
+        log.warn("InsufficientAnnualLeaveException has occurred. s%"
+                .formatted(exception.getStatus().getMessage()));
+        return new BaseResponse<>(exception.getStatus());
+    }
+
+
 }

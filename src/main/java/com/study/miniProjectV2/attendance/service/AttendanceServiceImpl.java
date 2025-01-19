@@ -3,16 +3,17 @@ package com.study.miniProjectV2.attendance.service;
 import com.study.miniProjectV2.attendance.dto.RequestCheckInOutDto;
 import com.study.miniProjectV2.attendance.entity.Attendance;
 import com.study.miniProjectV2.attendance.repository.AttendanceRepository;
-import com.study.miniProjectV2.common.exception.BaseException;
 import com.study.miniProjectV2.common.exception.DuplicateException;
 import com.study.miniProjectV2.common.exception.NotFoundException;
 import com.study.miniProjectV2.common.response.BaseResponseStatus;
 import com.study.miniProjectV2.user.entity.User;
 import com.study.miniProjectV2.user.repository.UserRepository;
+import com.study.miniProjectV2.user.service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
@@ -21,13 +22,12 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AttendanceServiceImpl implements AttendanceService{
     private final AttendanceRepository attendanceRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     @Transactional
     @Override
     public void checkIn(RequestCheckInOutDto requestCheckInOutDto) {
-        User user = userRepository.findById(requestCheckInOutDto.getUserId())
-                       .orElseThrow(() -> new NotFoundException(BaseResponseStatus.USER_NOT_FOUND));
+        User user = userService.getUserById(requestCheckInOutDto.getUserId());
 
         LocalDateTime checkInTime = requestCheckInOutDto.getNowTime();
         if(validateCheckInDuplication(checkInTime)) {
@@ -49,9 +49,7 @@ public class AttendanceServiceImpl implements AttendanceService{
     @Transactional
     @Override
     public void checkOut(RequestCheckInOutDto requestCheckInOutDto) {
-        User user = userRepository.findById(requestCheckInOutDto.getUserId())
-                .orElseThrow(() -> new NotFoundException(BaseResponseStatus.USER_NOT_FOUND));
-
+        User user = userService.getUserById(requestCheckInOutDto.getUserId());
         Attendance latestAttendance = attendanceRepository.findLatestAttendance()
                 .orElseThrow(() -> new NotFoundException(BaseResponseStatus.CHECK_IN_TIME_NOT_FOUND));
 
@@ -61,5 +59,16 @@ public class AttendanceServiceImpl implements AttendanceService{
         else {
             throw new NotFoundException(BaseResponseStatus.CHECK_IN_TIME_NOT_FOUND);
         }
+    }
+
+    @Override
+    public void submitAnnualLeave(User user, LocalDate startDay) {
+        attendanceRepository.save(Attendance.builder()
+                .user(user)
+                .checkInTime(startDay.atTime(00,00))
+                .checkOutTime(startDay.atTime(23,59))
+                .usingDayOff(true)
+                .build()
+        );
     }
 }

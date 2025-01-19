@@ -21,7 +21,7 @@ public class TeamController {
     private final TeamService teamService;
     @PostMapping
     public BaseResponse<String> createTeam(@RequestBody RequestCreateTeamDto requestCreateTeamDto) {
-        teamService.createTeam(requestCreateTeamDto.getName());
+        teamService.createTeam(requestCreateTeamDto);
         return new BaseResponse<>(BaseResponseStatus.SUCCESS);
     }
 
