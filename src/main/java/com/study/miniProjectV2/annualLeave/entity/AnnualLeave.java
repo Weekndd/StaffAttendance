@@ -1,14 +1,20 @@
 package com.study.miniProjectV2.annualLeave.entity;
 
+import com.study.miniProjectV2.common.exception.InsufficientAnnualLeaveException;
+import com.study.miniProjectV2.common.response.BaseResponseStatus;
 import com.study.miniProjectV2.team.entity.Team;
 import com.study.miniProjectV2.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
+@Slf4j
 @Table(name = "annual_leave")
 @Entity
 @Getter
@@ -49,6 +55,30 @@ public class AnnualLeave {
         this.totalDays = totalDays;
         this.usedDays = usedDays;
         this.lastUpdate = lastUpdate;
+    }
+
+    public void useAnnualLeave() {
+        this.usedDays++;
+        this.lastUpdate = LocalDateTime.now();
+    }
+    public boolean checkAnnualDeadLine(LocalDate startDay) {
+
+        LocalDate currentTime = LocalDate.now(); //현재날짜
+        long daysUntilLeave = ChronoUnit.DAYS.between(currentTime, startDay); //현재날짜 - 연차날짜
+        //날짜가 지나지 않았고, 데드라인기간 보다 많은 경우 false;
+        if(daysUntilLeave >= 0 && daysUntilLeave >= team.getLeaveDeadlineDays()) {
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+
+    public boolean checkRemainingDays() {
+        if(this.totalDays - this.usedDays <= 0) {
+           return true;
+        }
+        return false;
     }
 
 }
